@@ -7,6 +7,8 @@ import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelHandler;
 
+import com.gameserver.messageQueue.MessageQueueManager;
+import com.gameserver.messageQueue.RequestEvent;
 import com.gameserver.net.Header;
 import com.gameserver.net.Message;
 import com.gameserver.util.ErrorCode;
@@ -14,7 +16,7 @@ import com.gameserver.util.GsException;
 import com.gameserver.util.SpringContainer;
 
 /**
- * 网关处理器
+ * 协议处理器
  * 1.创建sessionID
  * 2.接受客户端的消息进行转发
  * @author zhaohui
@@ -23,6 +25,9 @@ import com.gameserver.util.SpringContainer;
 public class ServerHandler extends SimpleChannelHandler {
 
 	private final static Logger logger = Logger.getLogger(ServerHandler.class);
+	/** 消息队列 **/
+	private final MessageQueueManager messageQueueManager = new MessageQueueManager(
+			this);
 
 	@Override
 	public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e)
@@ -34,8 +39,9 @@ public class ServerHandler extends SimpleChannelHandler {
 	public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
 			throws Exception {
 		Message request = (Message) e.getMessage();
-		Message response = processRequest(request);
-		e.getChannel().write(response);
+
+		RequestEvent requestEvent = new RequestEvent(request, e.getChannel());
+		messageQueueManager.addRequest(requestEvent);
 	}
 
 	/**
@@ -45,7 +51,7 @@ public class ServerHandler extends SimpleChannelHandler {
 	 *            请求消息
 	 * @return
 	 */
-	private Message processRequest(Message request) {
+	public Message processRequest(Message request) {
 		int cmdId = getCommandId(request);
 		Message response = new Message(getResponseHeader(request, cmdId));
 		try {
