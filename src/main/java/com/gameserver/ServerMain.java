@@ -10,10 +10,16 @@ import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 
 import com.gameserver.config.ServerConfig;
+import com.gameserver.datalayer.protocol.Protocol;
+import com.gameserver.net.codec.HeaderDecoder;
+import com.gameserver.net.codec.HeaderEncoder;
+import com.gameserver.net.codec.decoder.ProtobufDecoder;
+import com.gameserver.net.codec.encoder.ProtobufEncoder;
 import com.gameserver.util.SpringContainer;
+import com.google.protobuf.ExtensionRegistry;
 
 /**
- * 网关服启动程序
+ * 服务器启动程序
  * 
  * @author Administrator
  * 
@@ -28,9 +34,18 @@ public class ServerMain {
 		ServerBootstrap bootstrap = new ServerBootstrap(
 				new NioServerSocketChannelFactory());
 		final ServerHandler handler = new ServerHandler();
+		final ExtensionRegistry registry = ExtensionRegistry.newInstance();
+		Protocol.registerAllExtensions(registry);
+
 		bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
 			public ChannelPipeline getPipeline() {
 				ChannelPipeline pipeline = Channels.pipeline();
+				pipeline.addLast("decoder", new HeaderDecoder());
+				pipeline.addLast("pDecoder", new ProtobufDecoder(
+						Protocol.Request.getDefaultInstance(), registry));
+
+				pipeline.addLast("encoder", new HeaderEncoder());
+				pipeline.addLast("pEncoder", new ProtobufEncoder());
 				pipeline.addLast("handler", handler);
 				return pipeline;
 			}
@@ -40,8 +55,6 @@ public class ServerMain {
 
 		SpringContainer.getInstance().loadSpring();
 
-		logger.info("============Server Startup OK port on " + port
-				+ "==============");
+		logger.info("============Server Startup OK============");
 	}
-
 }

@@ -4,7 +4,6 @@ import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.oneone.OneToOneDecoder;
 
-import com.gameserver.net.Header;
 import com.gameserver.net.Message;
 
 /**
@@ -23,21 +22,18 @@ public abstract class Decoder extends OneToOneDecoder {
 			return msg;
 		}
 		Message message = (Message) msg;
-		Header header = message.getHeader();
-		transformData(header.getCommandId(), message);
+		Object logicObj = transformData(message.getData());
+		message.setData(logicObj);
 		return message;
 	}
 
 	/**
 	 * 将二进制数据转换成逻辑对象
 	 * 
-	 * @param logicObj  
-	 * 					逻辑对象
-	 * @param message   
+	 * @param msg   
 	 * 					请求对象
 	 * @throws Exception
 	 */
-	protected abstract void transformData(int commandId, Message message)
-			throws Exception;
+	protected abstract Object transformData(Object msg) throws Exception;
 
 }

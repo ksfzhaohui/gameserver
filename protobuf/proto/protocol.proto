@@ -1,0 +1,16 @@
+option java_package = "com.gameserver.datalayer.protocol"; 
+option java_outer_classname = "Protocol";
+
+message Request { 
+  extensions 100 to max;
+  required int32 id = 1; 
+}
+
+extend Request {
+  optional Login login = 100;
+}
+ 
+message Login {
+  required string user = 1;
+  required string pswd = 2;
+}

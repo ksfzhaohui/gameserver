@@ -17,15 +17,16 @@ public abstract class Encoder extends OneToOneEncoder {
 	protected Object encode(ChannelHandlerContext ctx, Channel channel,
 			Object msg) throws Exception {
 		Message message = (Message) msg;
-		transformData(message);
+		Object buffer = transformData(message.getData());
+		message.setData(buffer);
 		return msg;
 	}
 
 	/**
 	 * 将逻辑对象转换成二进制数据
-	 * @param message
+	 * @param msg
 	 * @throws Exception
 	 */
-	protected abstract void transformData(Message message) throws Exception;
+	protected abstract Object transformData(Object msg) throws Exception;
 
 }

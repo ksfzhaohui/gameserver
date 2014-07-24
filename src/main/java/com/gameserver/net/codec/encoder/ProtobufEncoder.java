@@ -1,7 +1,9 @@
 package com.gameserver.net.codec.encoder;
 
-import com.gameserver.net.Message;
+import static org.jboss.netty.buffer.ChannelBuffers.wrappedBuffer;
+
 import com.gameserver.net.codec.Encoder;
+import com.google.protobuf.MessageLite;
 
 /**
  *  业务逻辑对象转换成二进制数据
@@ -11,7 +13,14 @@ import com.gameserver.net.codec.Encoder;
 public class ProtobufEncoder extends Encoder {
 
 	@Override
-	protected void transformData(Message message) throws Exception {
-
+	protected Object transformData(Object msg) throws Exception {
+		if (msg instanceof MessageLite) {
+			return wrappedBuffer(((MessageLite) msg).toByteArray());
+		}
+		if (msg instanceof MessageLite.Builder) {
+			return wrappedBuffer(((MessageLite.Builder) msg).build()
+					.toByteArray());
+		}
+		return msg;
 	}
 }

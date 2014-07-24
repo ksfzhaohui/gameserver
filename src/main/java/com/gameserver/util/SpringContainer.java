@@ -17,7 +17,7 @@ public class SpringContainer {
 	}
 
 	public void loadSpring() {
-		String[] cfigPath = { "applicationContext.xml" };
+		String[] cfigPath = { "gs-handlers.xml" };
 		ctx = new ClassPathXmlApplicationContext(cfigPath);
 	}
 

@@ -30,6 +30,12 @@ public class ServerHandler extends SimpleChannelHandler {
 			this);
 
 	@Override
+	public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e)
+			throws Exception {
+		e.getChannel().write("连接成功");
+	}
+
+	@Override
 	public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e)
 			throws Exception {
 
