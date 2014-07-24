@@ -10,20 +10,6 @@ import com.gameserver.net.codec.Decoder;
  */
 public class ProtobufDecoder extends Decoder {
 
-	//	@Override
-	//	protected void transformData(Object logicObj, Request request)
-	//			throws Exception {
-	//		if (logicObj instanceof MessageLite) {
-	//			MessageLite messageLite = (MessageLite) logicObj;
-	//			MessageLite prototype = messageLite.getDefaultInstanceForType();
-	//			messageLite = prototype.newBuilderForType()
-	//					.mergeFrom((byte[]) request.getData()).build();
-	//			request.setData(messageLite);
-	//		} else {
-	//			throw new GsException(ErrorCode.CMD_OBJ_TYPE_ERROR);
-	//		}
-	//	}
-
 	@Override
 	protected void transformData(int commandId, Message message)
 			throws Exception {
