@@ -36,12 +36,6 @@ public class ServerHandler extends SimpleChannelHandler {
 	}
 
 	@Override
-	public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e)
-			throws Exception {
-
-	}
-
-	@Override
 	public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
 			throws Exception {
 		Message request = (Message) e.getMessage();
