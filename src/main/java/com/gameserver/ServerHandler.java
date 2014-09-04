@@ -1,14 +1,15 @@
 package com.gameserver;
 
 import org.apache.log4j.Logger;
+import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelHandler;
 
-import com.gameserver.messageQueue.MessageQueueManager;
-import com.gameserver.messageQueue.RequestEvent;
+import com.gameserver.cache.AbstractWork;
+import com.gameserver.cache.executor.OrderedQueuePoolExecutor;
 import com.gameserver.net.Header;
 import com.gameserver.net.Message;
 import com.gameserver.util.ErrorCode;
@@ -26,8 +27,11 @@ public class ServerHandler extends SimpleChannelHandler {
 
 	private final static Logger logger = Logger.getLogger(ServerHandler.class);
 	/** 消息队列 **/
-	private final MessageQueueManager messageQueueManager = new MessageQueueManager(
-			this);
+	//	private final MessageQueueManager messageQueueManager = new MessageQueueManager(
+	//			this);
+
+	private OrderedQueuePoolExecutor recvExcutor = new OrderedQueuePoolExecutor(
+			"消息接收队列", 100, 10000);
 
 	@Override
 	public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e)
@@ -40,8 +44,28 @@ public class ServerHandler extends SimpleChannelHandler {
 			throws Exception {
 		Message request = (Message) e.getMessage();
 
-		RequestEvent requestEvent = new RequestEvent(request, e.getChannel());
-		messageQueueManager.addRequest(requestEvent);
+		recvExcutor.addTask(request.getHeader().getSessionid(), new MWork(
+				request, e.getChannel()));
+
+		//		RequestEvent requestEvent = new RequestEvent(request, e.getChannel());
+		//		messageQueueManager.addRequest(requestEvent);
+	}
+
+	class MWork extends AbstractWork {
+		/** 消息 **/
+		private Message request;
+		/** 消息队列 **/
+		private Channel channel;
+
+		public MWork(Message request, Channel channel) {
+			this.request = request;
+			this.channel = channel;
+		}
+
+		@Override
+		public void run() {
+			channel.write(processRequest(request));
+		}
 	}
 
 	/**
@@ -51,7 +75,7 @@ public class ServerHandler extends SimpleChannelHandler {
 	 *            请求消息
 	 * @return
 	 */
-	public Message processRequest(Message request) {
+	private Message processRequest(Message request) {
 		int cmdId = getCommandId(request);
 		Message response = new Message(getResponseHeader(request, cmdId));
 		try {
