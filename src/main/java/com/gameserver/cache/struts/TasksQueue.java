@@ -1,16 +1,14 @@
 package com.gameserver.cache.struts;
 
-import java.util.ArrayDeque;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class TasksQueue<V> {
 
-	private Lock lock = new ReentrantLock();
 	/**
 	 * 命令队列
 	 */
-	private final ArrayDeque<V> tasksQueue = new ArrayDeque<V>();
+	private final BlockingQueue<V> tasksQueue = new LinkedBlockingQueue<V>();
 
 	private boolean processingCompleted = true;
 
@@ -20,12 +18,7 @@ public class TasksQueue<V> {
 	 * @return
 	 */
 	public V poll() {
-		try {
-			lock.lock();
-			return tasksQueue.poll();
-		} finally {
-			lock.unlock();
-		}
+		return tasksQueue.poll();
 	}
 
 	/**
@@ -35,24 +28,14 @@ public class TasksQueue<V> {
 	 * @return
 	 */
 	public boolean add(V value) {
-		try {
-			lock.lock();
-			return tasksQueue.add(value);
-		} finally {
-			lock.unlock();
-		}
+		return tasksQueue.add(value);
 	}
 
 	/**
 	 * 清理
 	 */
 	public void clear() {
-		try {
-			lock.lock();
-			tasksQueue.clear();
-		} finally {
-			lock.unlock();
-		}
+		tasksQueue.clear();
 	}
 
 	/**

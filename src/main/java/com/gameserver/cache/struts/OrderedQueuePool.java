@@ -8,24 +8,27 @@ public class OrderedQueuePool<K, V> {
 
 	/**
 	 * 获得任务队列
+	 * 
 	 * @param key
 	 * @return
 	 */
 	public TasksQueue<V> getTasksQueue(K key) {
-		synchronized (map) {
-			TasksQueue<V> queue = map.get(key);
+		TasksQueue<V> queue = map.get(key);
 
+		if (queue == null) {
+			TasksQueue<V> newQueue = new TasksQueue<V>();
+			queue = map.putIfAbsent(key, newQueue);
 			if (queue == null) {
-				queue = new TasksQueue<V>();
-				map.put(key, queue);
+				queue = newQueue;
 			}
-
-			return queue;
 		}
+
+		return queue;
 	}
 
 	/**
 	 * 获得全部任务队列
+	 * 
 	 * @param key
 	 * @return
 	 */
@@ -35,6 +38,7 @@ public class OrderedQueuePool<K, V> {
 
 	/**
 	 * 移除任务队列
+	 * 
 	 * @param key
 	 * @return
 	 */
